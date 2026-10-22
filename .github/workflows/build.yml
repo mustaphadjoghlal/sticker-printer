@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -19,7 +21,15 @@ jobs:
           New-Item -ItemType Directory -Path portable | Out-Null
           Copy-Item dist/StickerPrinter.exe portable/
           Copy-Item sample.xlsx portable/
+          Compress-Archive -Path portable/* -DestinationPath StickerPrinter-Portable.zip
       - uses: actions/upload-artifact@v4
         with:
           name: StickerPrinter-Portable
           path: portable/
+      - name: Publish release (latest)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --cleanup-tag -y 2>$null
+          gh release create latest dist/StickerPrinter.exe StickerPrinter-Portable.zip --title "Sticker Printer (latest)" --notes "Portable build. No install, no admin needed." --target ${{ github.sha }}

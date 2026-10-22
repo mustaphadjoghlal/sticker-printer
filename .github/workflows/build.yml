@@ -1,0 +1,25 @@
+name: Build Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: python -m PyInstaller --noconsole --onefile --name StickerPrinter app.py
+      - name: Prepare portable folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path portable | Out-Null
+          Copy-Item dist/StickerPrinter.exe portable/
+          Copy-Item sample.xlsx portable/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StickerPrinter-Portable
+          path: portable/

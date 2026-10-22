@@ -1,0 +1,6 @@
+openpyxl
+pillow
+qrcode
+arabic-reshaper
+python-bidi
+pywin32; sys_platform == "win32"
